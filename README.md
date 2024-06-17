@@ -3,20 +3,22 @@
 
 Here I am building a basic version of PayTM using the following tech stack.
 
-## Techstack
+## Tech Stack
 
 ### Backend:
-<u>Node.js</u> : Runtime environment to run javascript code.
+`Node.js` : Runtime environment to run javascript code.
 
-<u>Express</u> : Framework to create/handle backend API endpoints.
+`Express` : Framework to create/handle backend API endpoints.
 
-<u>Mongoose</u> : To connect to MongoDB database.
+`Mongoose` : To connect to MongoDB database.
 
-<u>MongoDB</u> : Database.
+`MongoDB` : Database.
 
 ### Frontend:
 
-<u>React</u> : As a frontend framework.
+`React` : As a frontend framework.
+
+`Tailwind` : As a CSS styling framework.
 
 ## Note
 
