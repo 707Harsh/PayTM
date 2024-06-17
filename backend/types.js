@@ -25,8 +25,19 @@ const schema3 = z.object({
 //     lastName : z.string().max(50).optional()
 // });
 
+const schema4 = z.object({
+    to : z.string(),
+    amount : z.number()
+})
+
+const schema5 = z.object({
+    to : z.string()
+})
+
 module.exports = {
     schema1,
     schema2,
-    schema3
+    schema3,
+    schema4,
+    schema5
 };

@@ -2,6 +2,7 @@ const express = require('express');
 const authMiddleware = require('../middleware');
 const { Account } = require('../db');
 const { default: mongoose } = require('mongoose');
+const { schema4 } = require('../types');
 
 const accountRouter = express.Router();
 
@@ -15,9 +16,16 @@ accountRouter.post('/transfer', authMiddleware, async(req,res)=>
 {
     const session = await mongoose.startSession();
     session.startTransaction();
-    // try {
+    try {
     
-        const {to, amount} = req.body;
+        const body = req.body;
+        const parsedBody = schema4.safeParse(body);
+        if(!parsedBody.success)
+        {
+            return res.status(422).json({msg:"Invalid inputs"});
+        }
+        const to = body.to;
+        const amount = body.amount;
         const senderAccount = await Account.findOne({userId:req.userId}).session(session);
     
         if(!senderAccount || (senderAccount.balance < amount))
@@ -39,13 +47,19 @@ accountRouter.post('/transfer', authMiddleware, async(req,res)=>
     
         await session.commitTransaction();
         res.status(200).json({msg:"Transfer successful"});
-    // } catch (error) {
-    //     await session.abortTransaction();
-    //     res.status(500).json({msg:"Internar server error"});
-    // }
-    // finally { 
-    //     session.endSession();
-    // }
+    } catch (error) {
+        await session.abortTransaction();
+        res.status(500).json({msg:"Internar server error or invalid inputs"});
+    }
+    finally { 
+        session.endSession();
+    }
 })
+
+accountRouter.use((err, req, res, next) => {
+    // response to user with 403 error and details
+    res.status(403).json({msg:"Some error occured"});
+    console.log(err);
+});
 
 module.exports = accountRouter;

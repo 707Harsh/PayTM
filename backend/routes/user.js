@@ -1,5 +1,5 @@
 const express = require('express');
-const {schema1, schema2, schema3} = require('../types');
+const {schema1, schema2, schema3, schema5} = require('../types');
 const { User, Account } = require('../db');
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = require('../config');
@@ -38,12 +38,12 @@ userRouter.post('/signup',async (req, res)=>
 
         await Account.create({
             userId : newUser._id,
-            balance : 1 + Math.random()*10000
+            balance : Math.round((Math.random() * 10000 + 1) * 100) / 100,
         })
 
         /// -------------------------
 
-        const token = jwt.sign({"userId":newUser._id},JWT_SECRET);
+        const token = jwt.sign({"userId":newUser._id, "firstName":`${newUser.firstName}`},JWT_SECRET);
         res.status(200).json({
             msg:"User created successfully",
             token:token
@@ -68,8 +68,8 @@ userRouter.post('/signin', async (req,res)=>
         return res.status(411).json({msg:"Invalid username or password !"});
         else
         {
-            const token = jwt.sign({"userId":existingUser._id},JWT_SECRET);
-            res.status(200).json({token:token});
+            const token = jwt.sign({"userId":existingUser._id,"firstName":`${existingUser.firstName}`},JWT_SECRET);
+            res.status(200).json({token:token, firstName:existingUser.firstName});
         }
     }
     else
@@ -77,6 +77,31 @@ userRouter.post('/signin', async (req,res)=>
         return res.status(411).json({
             msg:"Invalid username or password !"
         })
+    }
+})
+
+userRouter.get('/me',(req,res)=>
+{
+    const auth = req.headers.authorization;
+    if(!auth || !auth.startsWith('Bearer '))
+    {
+        res.status(403).json({msg:"Invalid"});
+    }
+    const token = auth.split(' ')[1];
+    try 
+    {
+        const decodedValue = jwt.verify(token,JWT_SECRET);
+        if(decodedValue.userId)
+        {
+            res.status(200).json({msg:"good to go","firstName":`${decodedValue.firstName}`});
+        }
+        else
+        {
+            res.status(403).json({msg:"Invalid"}) 
+        }
+    } catch (e) 
+    {
+        res.status(403).json({msg:"Invalid"})    
     }
 })
 
@@ -120,7 +145,7 @@ userRouter.put('/update', authMiddleware, async(req,res)=>
     }
 })
 
-userRouter.get('/bulk', async (req, res)=>
+userRouter.get('/bulk', authMiddleware, async (req, res)=>
 {
     const filter = req.query.filter || "";
     const users = await User.find({
@@ -147,5 +172,40 @@ userRouter.get('/bulk', async (req, res)=>
         }})
     })
 })
+
+userRouter.post('/getName', async(req,res)=>
+{
+    const body = req.body;
+    const user = await User.findOne({_id:body.id})
+    res.status(200).json({"firstName":user.firstName, "lastName":user.lastName});
+})
+
+userRouter.post('/toChecker',async(req, res)=>
+{
+    const body = req.body;
+    const parsedBody = schema5.safeParse(body);
+    if(!parsedBody.success)
+    {
+        return res.status(400).json({msg:"Invalid inputs"});
+    }
+    else
+    {
+        const user = await User.findOne({_id : body.to})
+        if(user)
+        {
+            return res.status(200).json({msg:"good to go"});
+        }
+        else
+        {
+            return res.status(400).json({msg:"Invalid inputs"});
+        }
+    }
+})
+
+userRouter.use((err, req, res, next) => {
+    // response to user with 403 error and details
+    res.status(403).json({msg:"Some error occured"});
+    console.log(err);
+});
 
 module.exports = userRouter;

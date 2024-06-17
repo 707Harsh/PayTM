@@ -6,7 +6,7 @@ function authMiddleware(req, res, next)
     const auth = req.headers.authorization;
     if(!auth || !auth.startsWith('Bearer '))
     {
-        res.status(403).json({msg:"forbidden-you don't have permission to access this resource"});
+        res.status(403).json({msg:"Invalid"});
     }
     const token = auth.split(' ')[1];
     try 
@@ -19,11 +19,11 @@ function authMiddleware(req, res, next)
         }
         else
         {
-            res.status(403).json({msg:"forbidden-you don't have permission to access this resource"}) 
+            res.status(403).json({msg:"Invalid"}) 
         }
     } catch (e) 
     {
-        res.status(403).json({msg:"forbidden-you don't have permission to access this resource"})    
+        res.status(403).json({msg:"Invalid"})    
     }
 }
 
