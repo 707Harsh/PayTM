@@ -1,5 +1,7 @@
+require('dotenv').config()
+
 const mongoose = require('mongoose');
-mongoose.connect('mongodb+srv://Harsh1:707%40atlas@cluster0.dpaaemz.mongodb.net/paytm');
+mongoose.connect(`${process.env.CONNECTION_STRING}`);
 // add the connection string above
 
 const userSchema = new mongoose.Schema({
