@@ -147,20 +147,28 @@ userRouter.put('/update', authMiddleware, async(req,res)=>
 
 userRouter.get('/bulk', authMiddleware, async (req, res)=>
 {
-    const filter = req.query.filter || "";
+    let filter = req.query.filter || "";
+    filter = filter.trim();
+    
+    const escapeRegExp = (string) => {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+    };
+
+    const escapedFilter = escapeRegExp(filter);
+
     const users = await User.find({
-        '$or':[{
-            firstName : {
-                '$regex' : filter,
-                '$options' : 'i'
+        '$or': [{
+            firstName: {
+                '$regex': escapedFilter,
+                '$options': 'i'
             }
-        },{
-            lastName : {
-                '$regex' : filter,
-                '$options' : 'i'
+        }, {
+            lastName: {
+                '$regex': escapedFilter,
+                '$options': 'i'
             }
         }]
-    })
+    });
     // through the above query if the user types 'har' in the searchbox then all the users which are having 'har' anywhere in their firstname or lastname will get added to the users array
 
     res.status(200).json({

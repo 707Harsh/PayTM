@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useRecoilValue } from "recoil";
 import { nameAtom } from "../store/atom";
+import { useDebounce } from "../hooks/debounce";
 // import { useRecoilState } from "recoil";
 
 export function Dashboard()
@@ -22,6 +23,7 @@ export function Dashboard()
     // const history = useHistory();
     const location = useLocation();
     const navigate = useNavigate();
+    const debouncedFilter = useDebounce(filter,0.5);
 
     useEffect( ()=>{
         const check = async()=>{
@@ -55,14 +57,14 @@ export function Dashboard()
 
         // debouncing here
         useEffect(()=>{
-            axios.get('http://localhost:3000/api/v1/user/bulk?filter='+filter,
+            axios.get('http://localhost:3000/api/v1/user/bulk?filter='+debouncedFilter,
             {
                 headers:{
                     'Authorization':`Bearer ${token}`
                 }
             }).then(response=>{setUsersList(response.data.users)})
     
-        },[filter])
+        },[debouncedFilter])
     
         useEffect(()=>{
     
